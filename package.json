@@ -9,8 +9,10 @@
   "author": "Youssef Rekik",
   "license": "ISC",
   "dependencies": {
+    "angular": "^1.5.5",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.1",
+    "bootstrap": "^3.3.6",
     "express": "^4.13.4",
     "jsonwebtoken": "^7.0.0",
     "mongoose": "^4.4.19",
