@@ -1,4 +1,5 @@
 var User = require('../models/user');
+var Tasks= require('../models/Tasks');
 var config = require('../../config');
 
 var secretKey = config.secretKey;
@@ -83,23 +84,52 @@ module.exports = function(app,express){
 
 
 
-	app.use(function(req,res,next){
-		var token = req.body.token||req.param("token")||req.headers['x-access-token'];
-		if (token){
-			jsonwebtoekn.verify(token,secretKey,function(err,decoded){
-				if (err){
-					res.status(403).send({success:false,message:"failed to authenticate user"})
-				}else{
-					req.decoded=decoded;
+	api.use(function(req, res, next) {
+		var token = req.body.token || req.param('token') || req.headers['x-access-token'];
+		if(token) {
+				jsonwebtoken.verify(token, secretKey, function(err, decoded) {
+				if(err) {
+					res.status(403).send({ success: false, message: "Failed to authenticate user"});
+
+				} else {
+					req.decoded = decoded;
 					next();
 				}
 			});
-		}else{
-			res.status(403).send({success:false,message:"no token provided"});
+		} else {
+			res.status(403).send({ success: false, message: "No Token Provided"});
 		}
 	});
 
+	api.route('/')
+	   .post(function(req,res){
+	   	var tasks=new Tasks({
+	   		creator:req.decoded.id,
+	   		content:req.body.content,
+	   		done:req.body.done
+	   	});
+	   	tasks.save(function(err){
+	   		if(err){
+	   			res.send(err);
+	   			return
+	   		}
+	   		res.json({message:"New task created"});
+	   	});
+	   })
+	   .get(function(req,res){
+	   	Tasks.find({creator:req.decoded.id},function(err,tasks){
+	   		if (err){
+	   			res.send(err);
+	   			return;
+	   		}else{
+	   			res.json(tasks);
+	   		}
+	   	});
+	   });
 
+	api.get('/me',function(req,res){
+		res.json(req.decoded);
+	});
 
 	return api;
 
