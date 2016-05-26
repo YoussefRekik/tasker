@@ -1,31 +1,44 @@
 var User = require('../models/user');
-var Tasks= require('../models/Tasks');
+var Story = require('../models/story');
 var config = require('../../config');
 
 var secretKey = config.secretKey;
-var jsonwebtoken=require('jsonwebtoken')
+var jsonwebtoken = require('jsonwebtoken');
 
-function createToken(user){
-	var token =jsonwebtoken.sign({
-		_id:user._id,
+function createToken(user) {
+
+	var token = jsonwebtoken.sign({
+		id: user._id,
 		name: user.name,
-		username:user.username
-	},secretKey,{
+		username: user.username
+	}, secretKey,{
 		expiresIn:'1440m'
 		});
 	return token;
+
 }
 
-module.exports = function(app,express){
-	var api = express.Router();
-	api.post('/signup', function(req, res) {
+module.exports = function(app, express, io) {
 
+
+	var api = express.Router();
+	api.get('/all_stories', function(req, res) {
+		Story.find({}, function(err, stories) {
+			if(err) {
+				res.send(err);
+				return;
+			}
+			res.json(stories);
+		});
+	});
+
+	api.post('/signup', function(req, res) {
 		var user = new User({
 			name: req.body.name,
 			username: req.body.username,
 			password: req.body.password
 		});
-		
+		var token = createToken(user);
 		user.save(function(err) {
 			if(err) {
 				res.send(err);
@@ -34,21 +47,25 @@ module.exports = function(app,express){
 
 			res.json({ 
 				success: true,
-				message: 'User has been created!'
+				message: 'User has been created!',
+				token: token
 			});
 		});
 	});
 
-	api.get('/users',function(req,res){
-		User.find({},function(err,users){
+
+	api.get('/users', function(req, res) {
+
+		User.find({}, function(err, users) {
 			if(err) {
 				res.send(err);
 				return;
 			}
-			res.json(users);
-		})
-	})
 
+			res.json(users);
+
+		});
+	});
 
 	api.post('/login', function(req, res) {
 
@@ -60,7 +77,7 @@ module.exports = function(app,express){
 
 			if(!user) {
 
-				res.send({ message: "User doenst exist"});
+				res.send({ message: "User doesn't exist"});
 			} else if(user){ 
 
 				var validPassword = user.comparePassword(req.body.password);
@@ -69,12 +86,12 @@ module.exports = function(app,express){
 					res.send({ message: "Invalid Password"});
 				} else {
 
-					///// token
+					// token
 					var token = createToken(user);
 
 					res.json({
 						success: true,
-						message: "Successfuly login!",
+						message: "Successfuly logged in!",
 						token: token
 					});
 				}
@@ -82,16 +99,21 @@ module.exports = function(app,express){
 		});
 	});
 
-
-
 	api.use(function(req, res, next) {
+
 		var token = req.body.token || req.param('token') || req.headers['x-access-token'];
+
+		// check if token exist
 		if(token) {
-				jsonwebtoken.verify(token, secretKey, function(err, decoded) {
+
+			jsonwebtoken.verify(token, secretKey, function(err, decoded) {
+
 				if(err) {
 					res.status(403).send({ success: false, message: "Failed to authenticate user"});
 
 				} else {
+
+					//
 					req.decoded = decoded;
 					next();
 				}
@@ -99,40 +121,55 @@ module.exports = function(app,express){
 		} else {
 			res.status(403).send({ success: false, message: "No Token Provided"});
 		}
+
 	});
+
+	
+
+	// provides a legitimate token
 
 	api.route('/')
-	   .post(function(req,res){
-	   	var tasks=new Tasks({
-	   		creator:req.decoded.id,
-	   		content:req.body.content,
-	   		done:req.body.done
-	   	});
-	   	tasks.save(function(err){
-	   		if(err){
-	   			res.send(err);
-	   			return
-	   		}
-	   		res.json({message:"New task created"});
-	   	});
-	   })
-	   .get(function(req,res){
-	   	Tasks.find({creator:req.decoded.id},function(err,tasks){
-	   		if (err){
-	   			res.send(err);
-	   			return;
-	   		}else{
-	   			res.json(tasks);
-	   		}
-	   	});
-	   });
 
-	api.get('/me',function(req,res){
-		res.json(req.decoded);
+		.post(function(req, res) {
+
+			var story = new Story({
+				creator: req.decoded.id,
+				content: req.body.content,
+
+			});
+
+			story.save(function(err, newStory) {
+				if(err) {
+					res.send(err);
+					return
+				}
+				io.emit('story', newStory)
+				res.json({message: "New Story Created!"});
+			});
+		})
+
+
+		.get(function(req, res) {
+
+			Story.find({ creator: req.decoded.id }, function(err, stories) {
+
+				if(err) {
+					res.send(err);
+					return;
+				}
+
+				res.send(stories);
+			});
+		});
+
+	api.get('/me', function(req, res) {
+		res.send(req.decoded);
 	});
 
-	return api;
 
+
+
+	return api;
 
 
 }
