@@ -12,7 +12,7 @@ function createToken(user) {
 		name: user.name,
 		username: user.username
 	}, secretKey,{
-		expiresIn:'1440m'
+		expiresIn:'600m'
 		});
 	return token;
 
@@ -47,7 +47,7 @@ module.exports = function(app, express, io) {
 
 			res.json({ 
 				success: true,
-				message: 'User has been created!',
+				message: 'User has been created !',
 				token: token
 			});
 		});
