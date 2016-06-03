@@ -1,12 +1,10 @@
 var User = require('../models/user');
 var Story = require('../models/story');
 var config = require('../../config');
-
 var secretKey = config.secretKey;
 var jsonwebtoken = require('jsonwebtoken');
 
 function createToken(user) {
-
 	var token = jsonwebtoken.sign({
 		id: user._id,
 		name: user.name,
@@ -15,12 +13,9 @@ function createToken(user) {
 		expiresIn:'600m'
 		});
 	return token;
-
 }
 
 module.exports = function(app, express, io) {
-
-
 	var api = express.Router();
 	api.get('/all_stories', function(req, res) {
 		Story.find({}, function(err, stories) {
