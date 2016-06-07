@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
 
@@ -22,7 +21,6 @@ UserSchema.pre('save', function(next) {
 
 		user.password = hash;
 		next();
-
 	});
 });
 
