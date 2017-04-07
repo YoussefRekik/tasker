@@ -3,15 +3,6 @@
 Integration of ChaCha20-Poly1305 Cipher Suites into a DTLS Stack for Resource-constrained devices
 The tinydtls stack is a 6LBR copy of https://github.com/cetic/tinydtls
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-```
-$ git clone https://git.ivesk.hs-offenburg.de/tinydtls/tinydtls-ivesk.git
-```
-
-
-
 ### Prerequisites
 
 What things you need to install and how to install them
@@ -32,6 +23,13 @@ $ sudo make install
 
 ```
 $ sudo apt-get install autoreconf
+```
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+```
+$ git clone https://git.ivesk.hs-offenburg.de/tinydtls/tinydtls-ivesk.git
 ```
 
 ### Installing
