@@ -21,26 +21,22 @@ First things First Libsoduim is a must :
  1 - Download a [tarball of libsodium](https://download.libsodium.org/libsodium/releases) : libsodium-1.0.11.tar.gz was used for testing
 
 ```
-
 $ ./configure
 
 $ make && make check
 
 $ sudo make install
-
-
 ```
 
  2 - Autoreconf is needed to generate the makefile :
 
 ```
 $ sudo apt-get install autoreconf
-
 ```
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
+To get a development env running :
 
 ```
 $ autoreconf
